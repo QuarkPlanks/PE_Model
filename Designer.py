@@ -7,6 +7,10 @@ def data_process_con(x):
     df = pd.DataFrame(x)
     df[5] = 10*x[:,2]*x[:,3]*x[:,4]*np.exp(-1000*(1/(x[:,1]+273.15)-1/(40+273.15)))/(1+10*x[:,2]*x[:,3]*x[:,4]*np.exp(-1000*(1/(x[:,1]+273.15)-1/(40+273.15))))
     return np.array(df)
+def data_process_BD(x):
+    df = pd.DataFrame(x)
+    df[5] = (1.06e20*np.exp(-1.273e4/(x[:,1]+273.15))+1.21e21*np.exp(-1.324e4/(x[:,1]+273.15)))/(2.97e21*np.exp(-1.293e4/(x[:,1]+273.15)) + 1.06e20*np.exp(-1.273e4/(x[:,1]+273.15))+1.21e21*np.exp(-1.324e4/(x[:,1]+273.15)))
+    return np.array(df)
 
 # Import Models
 import os
@@ -46,10 +50,9 @@ def objective(x):
 
 def restrict(x):
     x = x.reshape(1, -1)  
-    xx = x.copy()
-    xx[:,1] = np.exp(-1.3e4/(xx[:,1]+273.15))
-    xx = scaler_BD.transform(xx)
-    y = BD_model.predict(xx)
+    x = data_process_BD(x)
+    x = scaler_BD.transform(x)
+    y = BD_model.predict(x)
     if y <= 0:
         y = 0
     return np.clip(y, -1e4, 1e4)
@@ -113,4 +116,4 @@ def optimization(BD, disp=False, search=False):
             return res
 
 # Design
-res = optimization(125, True, True)
+res = optimization(120, True, False)

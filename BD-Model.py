@@ -86,13 +86,17 @@ def read_data(file_path):
     os.chdir(back)
     return x, y_conversion, y_BD
 
+def data_process(x):
+    df = pd.DataFrame(x)
+    df[5] = (1.06e20*np.exp(-1.273e4/(x[:,1]+273.15))+1.21e21*np.exp(-1.324e4/(x[:,1]+273.15)))/(2.97e21*np.exp(-1.293e4/(x[:,1]+273.15)) + 1.06e20*np.exp(-1.273e4/(x[:,1]+273.15))+1.21e21*np.exp(-1.324e4/(x[:,1]+273.15)))
+    return np.array(df)
 # Import and process data
 from sklearn.preprocessing import StandardScaler
 
 train_x, train_y_con, train_y_BD = read_data('train_BD.xlsx')
-train_x[:,1] = np.exp(-1.3e4/(train_x[:,1]+273.15))
+train_x = data_process(train_x)
 test_x, test_y_con, test_y_BD = read_data('test_BD.xlsx')
-test_x[:,1] = np.exp(-1.3e4/(test_x[:,1]+273.15))
+test_x = data_process(test_x)
 scaler = StandardScaler()
 train_x_scaled = scaler.fit_transform(train_x)
 test_x_scaled = scaler.transform(test_x)
@@ -156,7 +160,7 @@ def save_model(model, filename):
 # Save Model
 import os
 train_x, train_y_con, train_y_BD = read_data('BD.xlsx')
-train_x[:,1] = np.exp(-1e4/(train_x[:,1]+273.15))
+train_x = data_process(train_x)
 train_x_scaled = scaler.fit_transform(train_x)
 model_names = ['Linear']
 models = [Linear]
